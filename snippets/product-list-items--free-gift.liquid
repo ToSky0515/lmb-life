@@ -1,0 +1,77 @@
+{% assign item = product %}
+{% if template contains 'search' %}
+  {% assign item = item %}
+{% elsif template contains 'product' %}
+  {% assign item = prod %}
+{% endif %}
+
+{% if settings.product_stock_overlay and item.available %}
+  {% assign show_stock_indicator = false %}
+  {% assign total = 0 %}
+  {% assign threshold = settings.product_stock_overlay_show | times: 1 %}
+  {% for variant in item.variants %}
+    {% if variant.inventory_management == "shopify" and variant.inventory_quantity > 0 and varient.inventory_policy != 'continue'%}
+      {% assign total = total | plus: variant.inventory_quantity %}
+      {% assign show_stock_indicator = true %}
+    {% endif %}
+  {% endfor %}
+{% endif %}
+<article class="product-list-item" {% unless onboarding %}id="product-list-item-{{ item.id }}"{% endunless %}>
+
+  <figure class="product-list-item-thumbnail">
+    {% unless onboarding %}
+      <a href="{% if item.available %}{% unless onboarding %}{{ item.url | within: collection }}{% endunless %}{% else %}#{% endif %}" data-product-id="{{ item.title }}" {% if item.available %}class="select-product"{% endif %}>
+        {%
+          include 'rimg',
+          img: item.featured_image,
+          class: 'product-list-item-image',
+          size: '600x600',
+          lazy: true
+        %}      
+
+        {% if show_stock_indicator and total < threshold %}
+          <span class="stock-overlay meta">{{ 'products.product.stock_level' | t: stock_count: total }}</span>
+        {% endif %}
+      </a>
+    {% else %}
+      <a href="#">
+        {{ onboarding_image }}
+      </a>
+    {% endunless %}
+  </figure>
+
+  <div class="product-list-item-details">
+    {% if settings.product_show_vendor %}
+      <p class="product-list-item-vendor vendor meta">
+        {% unless onboarding %}
+          {{ item.vendor }}
+        {% else %}
+          {{ onboarding_vendor }}
+        {% endunless %}
+      </p>
+    {% endif %}
+    <p class="product-list-item-title">
+      <a href="{% if item.available %}{% unless onboarding %}{{ item.url | within: collection }}{% endunless %}{% else %}#{% endif %}" data-product-id="{{ item.title }}" {% if item.available %}class="select-product"{% endif %}>
+        {% unless onboarding %}
+          {{ item.title }}
+        {% else %}
+          {{ onboarding_title }}
+        {% endunless %}
+      </a>
+    </p>
+    {% if product.id == 9430047950 %}
+      {% assign available = false %}
+    {% else %}
+      {% if item.available == true %}
+    	{% assign available = true %}
+      {% else %}
+    	{% assign available = false %}
+      {% endif %}
+    {% endif %}
+    <p>
+      <a href="{% if available %}{% unless onboarding %}{{ item.url | within: collection }}{% endunless %}{% else %}#{% endif %}" class="button review-capture {% if available %}select-product{% else %} disabled{% endif %}" data-product-id="{{ item.title }}">
+        {% if available %}Claim this Product{% else %}Sold Out{% endif %}
+      </a>
+    </p>
+  </div>
+</article>

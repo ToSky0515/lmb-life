@@ -1,0 +1,96 @@
+{% assign item = product %}
+{% if template contains 'search' %}
+  {% assign item = item %}
+{% elsif template contains 'product' %}
+  {% assign item = prod %}
+{% endif %}
+
+{% if settings.product_stock_overlay and item.available %}
+  {% assign show_stock_indicator = false %}
+  {% assign total = 0 %}
+  {% assign threshold = settings.product_stock_overlay_show | times: 1 %}
+  {% for variant in item.variants %}
+    {% if variant.inventory_management == "shopify" and variant.inventory_quantity > 0 and varient.inventory_policy != 'continue'%}
+      {% assign total = total | plus: variant.inventory_quantity %}
+      {% assign show_stock_indicator = true %}
+    {% endif %}
+  {% endfor %}
+{% endif %}
+{% capture reviewLink %}
+  {% case product.id %}
+    {% when 5856750595 %}
+      https://www.amazon.com/review/create-review?&asin=B0085GKCWW
+    {% when 9430047950 %}
+      https://www.amazon.com/review/create-review?&asin=B01NCAO3BB
+    {% when 170568253464 %}
+  	  https://www.amazon.com/review/create-review?&asin=B074WKJKHV
+  	{% when 1253265866795 %}
+  	  https://www.amazon.com/review/create-review?&asin=B07CZPKYHG
+  	{% when 1253277401131 %}
+      https://www.amazon.com/review/create-review?&asin=B07CZMS7DX
+    {% when 1560380506155 %}
+      https://www.amazon.com/review/create-review?&asin=B07HVYVFVX
+  {% endcase %}
+{% endcapture %}
+<article class="product-list-item" {% unless onboarding %}id="product-list-item-{{ item.id }}"{% endunless %}>
+
+  <figure class="product-list-item-thumbnail">
+    {% unless onboarding %}
+      <a href="{{ reviewLink }}" data-product-id="{{ item.title }}" class="product-link">
+        {%
+          include 'rimg',
+          img: item.featured_image,
+          class: 'product-list-item-image',
+          size: '600x600',
+          lazy: true
+        %}      
+
+        {% if show_stock_indicator and total < threshold %}
+          <span class="stock-overlay meta">{{ 'products.product.stock_level' | t: stock_count: total }}</span>
+        {% endif %}
+      </a>
+    {% else %}
+      <a href="#">
+        {{ onboarding_image }}
+      </a>
+    {% endunless %}
+  </figure>
+
+  <div class="product-list-item-details">
+    {% if settings.product_show_vendor %}
+      <p class="product-list-item-vendor vendor meta">
+        {% unless onboarding %}
+          {{ item.vendor }}
+        {% else %}
+          {{ onboarding_vendor }}
+        {% endunless %}
+      </p>
+    {% endif %}
+    <p class="product-list-item-title">
+      <a href="{{ reviewLink }}" data-product-id="{{ item.title }}" class="product-link">
+        {% unless onboarding %}
+          {{ item.title }}
+        {% else %}
+          {{ onboarding_title }}
+        {% endunless %}
+      </a>
+    </p>
+    <p>
+      <a href="{{ reviewLink }}" class="button secondary review-capture product-link" data-product-id="{{ item.title }}">
+        Select &amp; Review
+      </a>
+    </p>
+    <div class="product-review" style="display: none;">
+      <span class="star-rating star-5">
+        <input type="radio" name="rating" value="1"><i></i>
+        <input type="radio" name="rating" value="2"><i></i>
+        <input type="radio" name="rating" value="3"><i></i>
+        <input type="radio" name="rating" value="4"><i></i>
+        <input type="radio" name="rating" value="5"><i></i>
+      </span>
+      <label for="review-text-{{ product.id }}" style="display:none;">Review</label>
+      <textarea name="review-text" id="review-text-{{ product.id }}" placeholder="Enter your review here..."></textarea>
+      <p><a href="#save" class="review-save button">Save Review</a></p>
+    </div>
+  </div>
+</article>
